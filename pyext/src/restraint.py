@@ -183,6 +183,9 @@ class GaussianEMRestraintWrapper(object):
         self.set_weight(weight)
 
     def center_target_density_on_model(self):
+        '''
+        aligns the center of mass of the target GMM on the center of mass of the model
+        '''
         target_com = IMP.algebra.Vector3D(0, 0, 0)
         target_mass = 0.0
         for p in self.target_ps:
@@ -228,6 +231,9 @@ class GaussianEMRestraintWrapper(object):
         return com
 
     def center_target_density_on_origin(self):
+        '''
+        aligns the center of mass of the target GMM on the origin
+        '''
         target_com = self.get_center_of_mass()
         print('target com', target_com)
         model_com = IMP.algebra.Vector3D(0, 0, 0)
@@ -240,6 +246,10 @@ class GaussianEMRestraintWrapper(object):
         # IMP.pmi.tools.translate_hierarchies(self.densities,v)
 
     def center_model_on_target_density(self, input_object):
+        '''
+        aligns the model on the target density
+        @param input_objects IMP.pmi.representation.Representation or IMP.pmi.topology.State
+        '''
         if type(input_object) is IMP.pmi.representation.Representation:
             hier = input_object.prot
         elif type(input_object) is IMP.pmi.topology.State:
@@ -271,6 +281,9 @@ class GaussianEMRestraintWrapper(object):
             IMP.core.transform(IMP.core.XYZ(p), transformation)
 
     def center_on_target_density(self):
+        '''
+        align the model on target GMM
+        '''
         target_com = self.get_center_of_mass()
         print('target com', target_com)
         model_com = self.get_center_of_mass(target=False)
@@ -297,6 +310,10 @@ class GaussianEMRestraintWrapper(object):
 
 
     def set_weight(self,weight):
+        '''
+        set the weight of the restraint
+        @param weight
+        '''
         self.weight = weight
         self.rs.set_weight(weight)
 
@@ -324,6 +341,9 @@ class GaussianEMRestraintWrapper(object):
         return self.rb
 
     def get_density_as_hierarchy(self):
+        '''
+        returns a hierarchy whose leaves are the gaussian particles of the target GMM
+        '''
         if self.em_root_hier is None:
             self.em_root_hier = IMP.atom.Copy.setup_particle(IMP.Particle(self.m),0)
             self.em_root_hier.set_name("GaussianEMRestraint_density_"+self.label)
