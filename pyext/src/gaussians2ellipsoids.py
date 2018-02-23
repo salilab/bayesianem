@@ -1,3 +1,4 @@
+#Use this to produce a chimera command file that when opened with chimera displays the components of the input GMM as ellipsoids
 import IMP
 import IMP.isd
 import IMP.isd.gmm_tools
