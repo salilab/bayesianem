@@ -1,6 +1,6 @@
-\brief bayesianem, an IMP module for Bayesian multi-scale modeling of macromolecular structures based on cryo-electron microscopy density maps
+# bayesianem, an IMP module for Bayesian multi-scale modeling of macromolecular structures based on cryo-electron microscopy density maps
 
-# Usage:
+## Usage:
 
 First, import the module:
 
@@ -30,7 +30,7 @@ gem.set_label("Total")
 output_objects.append(gem)
 ```
 
-# Info
+## Info
 
 _Author(s)_: Samuel Hanot, Massimiliano Bonomi, Riccardo Pellarin
 
