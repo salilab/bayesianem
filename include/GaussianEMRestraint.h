@@ -85,7 +85,7 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
      \param[in] density_ps particles for the density GMM
      \param[in] global_sigma Particle to modulate the uncertainty
      \param[in] model_cutoff_dist Cutoff for the model-model interactions
-     \param[in] density_cutoff_dist Cutoff for model-density interactions
+     \param[in] cutoff_dist Cutoff for model-density interactions
      \param[in] slope Gentle term to move all particles to the density
      \param[in] update_model (DEPRECATED) update model each cycle
      \param[in] backbone_slope Limit the slope only to backbone particles
@@ -95,7 +95,7 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   GaussianEMRestraint(Model *mdl,
                       ParticleIndexes model_ps, ParticleIndexes density_ps,
                       ParticleIndex global_sigma,
-                      Float model_cutoff_dist,Float density_cutoff_dist,Float slope,
+                      Float model_cutoff_dist,Float cutoff_dist,Float slope,
                       bool update_model=true, bool backbone_slope=false,
                       std::string name="GaussianEMRestraint%1%");
 
@@ -110,14 +110,6 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   */
   void compute_initial_scores();
   
-  ParticleIndexes const get_indexes(){ 
-                         return pis_debug_;
-			 };
-  Floats const get_log2(){
-                         return log2_debug_;
-			 };
-			 
-  void debug();
   //! Set restraint slope
   void set_slope(Float s){slope_=s;}
 
@@ -135,19 +127,22 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   ParticleIndexes model_ps_;
   ParticleIndexes density_ps_;
   ParticleIndex global_sigma_;
-  ParticleIndexes pis_debug_;
-  Floats log2_debug_;
   Float slope_;
   bool update_model_;
   int msize_,dsize_;
   Float normalization_;
-  Float dd_score_;
-  Float self_mm_score_;
-  PointerMember<container::CloseBipartitePairContainer> md_container_;
-  Pointer<container::ClosePairContainer> mm_container_;
   ParticleIndexes slope_ps_; //experiment
-  std::map<ParticleIndex,Float> map_score_dd_;
+  std::vector<Float> vec_score_dd_;
+  std::vector<Float> vec_score_dm_;
+
   Float cached_score_term_; 
+
+	Float cutoff_dist_;
+
+	Float score_gaussian_overlap (Model *m,
+	                             ParticleIndexPair pp,
+															 Eigen::Vector3d * deriv)const;
+
 
   //variables needed to tabulate the exponential
   Floats exp_grid_;
