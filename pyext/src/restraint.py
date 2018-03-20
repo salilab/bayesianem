@@ -182,6 +182,9 @@ class GaussianEMRestraintWrapper(object):
         self.rs.add_restraint(self.gaussianEM_restraint)
         self.set_weight(weight)
 
+    def set_incremental(self,m):
+        self.gaussianEM_restraint.set_incremental(m)
+
     def center_target_density_on_model(self):
         '''
         aligns the center of mass of the target GMM on the center of mass of the model

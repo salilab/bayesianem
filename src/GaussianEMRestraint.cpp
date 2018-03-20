@@ -16,6 +16,7 @@
 #include <IMP/isd/Scale.h>
 #include <IMP/isd/em_utilities.h>
 #include <limits>
+#include <algorithm>
 
 IMPBAYESIANEM_BEGIN_NAMESPACE
 
@@ -27,7 +28,7 @@ GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
                                          bool update_model, bool backbone_slope,
                                          std::string name)
     : Restraint(mdl, name), model_ps_(model_ps), density_ps_(density_ps),
-      global_sigma_(global_sigma), slope_(slope), update_model_(update_model), cutoff_dist_(cutoff_dist) {
+      global_sigma_(global_sigma), slope_(slope), update_model_(update_model), cutoff_dist_(cutoff_dist), serial_mover_(NULL) {
 
   msize_ = model_ps.size();
   dsize_ = density_ps.size();
@@ -46,11 +47,18 @@ GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
                     "Density particles must have Mass");
   }
 
-	vec_score_dm_.reserve(dsize_);
-
-	for (int j(0) ; j < dsize_ ; ++j){
-		vec_score_dm_[j]=0.0;
+	vec_score_dm_.reserve(dsize_*msize_);
+	for (int j(0) ; j < dsize_*msize_ ; ++j){
+		vec_score_dm_.push_back(0.0);
 	}
+
+	slope_scores_.reserve(msize_);
+	cached_model_indices_.reserve(msize_);
+	for (int j(0) ; j < msize_ ; ++j){
+		slope_scores_.push_back(0.0);
+		cached_model_indices_.push_back(j);
+	}
+
 
   compute_initial_scores();
 
@@ -95,23 +103,33 @@ void GaussianEMRestraint::compute_initial_scores() {
   cached_score_term_ += 0.5 * std::log(IMP::PI);
   cached_score_term_ -= std::lgamma(dsize_ / 2.0);
 
+	compute_individual_scores(cached_model_indices_);
+
 }
 
-double
-GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
-  Float scale = IMP::isd::Scale(get_model(), global_sigma_).get_scale();
-  Eigen::Vector3d deriv;
+Ints get_changed_indices(
+	const IMP::core::SerialMover * sm,
+	const std::vector<Ints> &indices,
+	int num_ps){
 
-  Float slope_score = 0.0;
+	Ints ret;
+	Ints changed_indices;
 
-  std::vector<Float> vec_score_dm_(dsize_, 0.0);
+	const int i = sm->get_mover_index();
+	return indices[i];
+}
+
+
+void
+GaussianEMRestraint::compute_individual_scores(const Ints &changed_model_ps) const {
 
 	double determinant;
 	bool invertible;
 	Eigen::Matrix3d inverse = Eigen::Matrix3d::Zero();
-	for (int i(0) ; i < msize_ ; ++i){
-		Float min_dist = std::numeric_limits<Float>::max();
+	for (int l(0) ; l < changed_model_ps.size() ; ++l){
+		const int i=changed_model_ps[l];
 		const ParticleIndex pi(model_ps_[i]);
+		Float min_dist = std::numeric_limits<Float>::max();
 		core::Gaussian g1(get_model(),pi);
 		const Float m1 = atom::Mass(get_model(),pi).get_mass();
 		Eigen::Matrix3d cov1 = g1.get_global_covariance();
@@ -125,24 +143,46 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
 			if (sd < min_dist) {
 				min_dist = sd;
 			}
-			if (sd < cutoff_dist_){
+			const Float xyzrdist = IMP::core::get_distance(IMP::core::XYZR(get_model(), pi), IMP::core::XYZR(get_model(), pj));
+			if (xyzrdist < cutoff_dist_){
 				Eigen::Matrix3d covar = cov1 + g2.get_global_covariance();
 				covar.computeInverseAndDetWithCheck(inverse,determinant,invertible);
 				const Float mass12 = m1 * atom::Mass(get_model(),pj).get_mass();
 				const Eigen::Vector3d tmp = inverse*v;
 				const Float score = mass12 * 0.06349363593424097 / (std::sqrt(determinant)) * std::exp(-0.5*v.transpose()*tmp);
-				vec_score_dm_[j] += score;
+				vec_score_dm_[n] = score;
 			}
 		}
-		slope_score += slope_ * min_dist;
+		slope_scores_[i] = slope_ * min_dist;
+	}
+}
+
+double
+GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
+  Float scale = IMP::isd::Scale(get_model(), global_sigma_).get_scale();
+  Eigen::Vector3d deriv;
+
+
+	if(serial_mover_ && serial_mover_->get_mover_index()>=0){
+		Ints changed_model_ps = get_changed_indices(serial_mover_, model_indexes_, model_ps_.size());
+		compute_individual_scores(changed_model_ps);
+	} else{
+		compute_individual_scores(cached_model_indices_);
 	}
 
+	Float slope_score = 0.0;
+	for (int i(0) ; i < msize_ ; ++i){
+		slope_score+=slope_scores_[i];
+	}
 
   double logterm = 0.0;
 	for (int j(0) ; j < dsize_ ; ++j){
-		const ParticleIndex pj(density_ps_[j]);
     const Float scoredd = vec_score_dd_[j];
-    Float scoredm = vec_score_dm_[j];
+    Float scoredm = 0.0;
+		for (int i(0) ; i < msize_ ; ++i){
+			const int n = i*dsize_ + j;
+			scoredm+=vec_score_dm_[n];
+		}
     const Float lt =
         std::log(scale * (scoredm + 0.0000000001) / (scoredd + 0.0000000001));
     logterm += lt * lt;
@@ -150,6 +190,46 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
   const double log_score =
       dsize_ * 0.5 * std::log(logterm) + cached_score_term_ + slope_score;
   return log_score;
+}
+
+Ints get_all_indexes(IMP::core::MonteCarloMover *m, const ParticleIndexes &ref){
+	Ints ret;
+	ModelObjectsTemp inputs = m->get_inputs();
+	for(int i(0) ; i<inputs.size() ; ++i){
+		ModelObject *o = inputs[i];
+		Particle *p = dynamic_cast<Particle *>(o);
+		if(p && IMP::core::Gaussian::get_is_setup(p)){
+			for(int j(0) ; j<ref.size() ; ++j){
+				if(p->get_index().get_index() == ref[j].get_index()){
+					ret.push_back(j);
+				}
+			}
+		}
+		else if(p && IMP::core::RigidBody::get_is_setup(p)){
+			ParticleIndexes pis = IMP::core::RigidBody(p).get_body_member_particle_indexes();
+			for (int k(0) ; k<pis.size() ; ++k){
+				for(int j(0) ; j<ref.size() ; ++j){
+					if(pis[k].get_index() == ref[j].get_index()){
+						ret.push_back(j);
+					}
+				}				
+			}
+		}
+	}
+	std::sort(ret.begin(), ret.end());
+	return ret;
+}
+
+void GaussianEMRestraint::set_incremental(IMP::core::SerialMover *sm){
+	serial_mover_ = sm;
+	model_indexes_.clear();
+	density_indexes_.clear();
+	const IMP::core::MonteCarloMovers movers = sm->get_movers();
+	for(int i(0) ; i<movers.size() ; ++i){
+		IMP::core::MonteCarloMover *m=movers[i];
+		Ints model_ps_in_mover = get_all_indexes(m, model_ps_);
+		model_indexes_.push_back(model_ps_in_mover);
+	}
 }
 
 

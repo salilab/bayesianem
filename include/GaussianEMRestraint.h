@@ -14,6 +14,7 @@
 #include <IMP/container/ListSingletonContainer.h>
 #include <IMP/container_macros.h>
 #include <IMP/core/XYZ.h>
+#include <IMP/core/SerialMover.h>
 #include <IMP/core/Gaussian.h>
 #include <IMP/algebra/Gaussian3D.h>
 #include <IMP/container/CloseBipartitePairContainer.h>
@@ -104,7 +105,7 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
     return exp(-unprotected_evaluate(NULL));
   }
 
-  //! Pre-calculate the density-density and model-model scores
+  //! Pre-calculate the data-data overlap
   /** This is automatically called by the constructor.
       You only need to call it manually if you change Gaussian variances
   */
@@ -119,7 +120,9 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   virtual double
     unprotected_evaluate(IMP::DerivativeAccumulator *accum)
     const IMP_OVERRIDE;
+  void compute_individual_scores(const Ints &indices) const IMP_OVERRIDE;
   virtual IMP::ModelObjectsTemp do_get_inputs() const IMP_OVERRIDE;
+	void set_incremental(IMP::core::SerialMover *sm);
   void show(std::ostream &out) const { out << "GEM restraint"; }
   IMP_OBJECT_METHODS(GaussianEMRestraint);
 
@@ -133,23 +136,24 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   Float normalization_;
   ParticleIndexes slope_ps_; //experiment
   std::vector<Float> vec_score_dd_;
-  std::vector<Float> vec_score_dm_;
+	std::vector<Float> slope_scores;
+
+	std::vector<Ints > density_indexes_;
+	std::vector<Ints > model_indexes_;
+	IMP::core::SerialMover *serial_mover_;
+
+	// these things are made mutable because they have to be modified by unprotected_evaluate that is const-qualified. 
+  mutable std::vector<Float> vec_score_dm_;
+	mutable std::vector<Float> slope_scores_;
 
   Float cached_score_term_; 
+	Ints cached_model_indices_;
 
 	Float cutoff_dist_;
 
 	Float score_gaussian_overlap (Model *m,
 	                             ParticleIndexPair pp,
 															 Eigen::Vector3d * deriv)const;
-
-
-  //variables needed to tabulate the exponential
-  Floats exp_grid_;
-  double invdx_;
-  double argmax_;
-
-
 };
 
 IMPBAYESIANEM_END_NAMESPACE
