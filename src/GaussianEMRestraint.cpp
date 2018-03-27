@@ -17,6 +17,7 @@
 #include <IMP/isd/em_utilities.h>
 #include <limits>
 #include <algorithm>
+#include <IMP/core/symmetry.h>
 
 IMPBAYESIANEM_BEGIN_NAMESPACE
 
@@ -193,29 +194,47 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
 }
 
 Ints get_all_indexes(IMP::core::MonteCarloMover *m, const ParticleIndexes &ref){
+	//first get indexes from the mover
+	ParticleIndexes gaussians;
 	Ints ret;
+	IMP::Model *mdl = m->get_model();
 	ModelObjectsTemp inputs = m->get_inputs();
 	for(int i(0) ; i<inputs.size() ; ++i){
 		ModelObject *o = inputs[i];
 		Particle *p = dynamic_cast<Particle *>(o);
 		if(p && IMP::core::Gaussian::get_is_setup(p)){
-			for(int j(0) ; j<ref.size() ; ++j){
-				if(p->get_index().get_index() == ref[j].get_index()){
-					ret.push_back(j);
-				}
-			}
+			gaussians.push_back(p->get_index());
 		}
 		else if(p && IMP::core::RigidBody::get_is_setup(p)){
 			ParticleIndexes pis = IMP::core::RigidBody(p).get_body_member_particle_indexes();
 			for (int k(0) ; k<pis.size() ; ++k){
-				for(int j(0) ; j<ref.size() ; ++j){
-					if(pis[k].get_index() == ref[j].get_index()){
-						ret.push_back(j);
-					}
-				}				
+				if(IMP::core::Gaussian::get_is_setup(mdl, pis[k])){
+					gaussians.push_back(pis[k]);
+				}
 			}
 		}
 	}
+	//second get references from the model
+	ParticleIndexes all_idxs = mdl->get_particle_indexes();
+	for(int i(0) ; i<all_idxs.size() ; ++i){
+		ParticleIndex pi = all_idxs[i];
+		if(IMP::core::Reference::get_is_setup(mdl, pi)){
+			IMP::core::Reference r = IMP::core::Reference(mdl, pi);
+			Particle *p = r.get_reference_particle();
+			if(std::find(gaussians.cbegin(), gaussians.cend(), p->get_index()) != gaussians.cend()){
+				gaussians.push_back(p->get_index());
+			}
+		}
+	}
+	//third intersect with the particles in ref
+	for(int i(0) ; i< gaussians.size() ; ++i){
+		for(int j(0) ; j<ref.size() ; ++j){
+			if(gaussians[i].get_index() == ref[j].get_index()){
+				ret.push_back(j);
+			}
+		}
+	}
+
 	std::sort(ret.begin(), ret.end());
 	return ret;
 }
