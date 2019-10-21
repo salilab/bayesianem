@@ -3,24 +3,12 @@ import IMP
 import IMP.core
 import IMP.algebra
 import IMP.atom
-import IMP.container
 
-import IMP.pmi.restraints.crosslinking_new
-import IMP.pmi.restraints.stereochemistry
-import IMP.pmi.restraints.em
-import IMP.pmi.restraints.basic
-import IMP.pmi.representation
-import IMP.pmi.tools
-import IMP.pmi.samplers
-import IMP.pmi.output
 import IMP.pmi.macros
-import IMP.pmi.io
 
 import IMP.bayesianem
 import IMP.bayesianem.restraint
 
-import os
-import operator
 import math
 
 def setup_gaussian():
