@@ -1,3 +1,4 @@
+from __future__ import print_function
 import IMP
 import IMP.core
 import IMP.algebra
@@ -97,17 +98,17 @@ IMP.atom.show_molecular_hierarchy(root_hier)
 
 
 gem=create_gem_ref([p11,p12],[p21,p22],'12')
-print gem.get_output()
+print(gem.get_output())
 outputobjects.append(gem)
 sampleobjects.append(gem)
 
 gem=create_gem_ref([p11,p12],[p31,p32],'13')
-print gem.get_output()
+print(gem.get_output())
 outputobjects.append(gem)
 sampleobjects.append(gem)
 
 gem=create_gem_cross([p21,p22],[p31,p32],'23')
-print gem.get_output()
+print(gem.get_output())
 outputobjects.append(gem)
 sampleobjects.append(gem)
 
