@@ -11,6 +11,7 @@ import IMP.container
 import IMP.bayesianem
 import IMP.isd
 import IMP.pmi.tools
+import IMP.pmi.mmcif
 import IMP.isd.gmm_tools
 import sys
 from math import sqrt
@@ -96,6 +97,7 @@ class GaussianEMRestraintWrapper(object):
         print('will scale target mass by', target_mass_scale)
 
         if target_fn != '':
+            self._set_dataset(target_fn)
             self.target_ps = []
             IMP.isd.gmm_tools.decorate_gmm_from_text(
                 target_fn,
@@ -116,6 +118,9 @@ class GaussianEMRestraintWrapper(object):
             for p in self.target_ps:
                 ms=IMP.atom.Mass(p).get_mass()
                 IMP.atom.Mass(p).set_mass(ms*scale)
+
+        for p, state in IMP.pmi.tools._all_protocol_outputs([], densities[0]):
+            p.add_em3d_restraint(state, self.target_ps, self.densities, self)
 
         # setup model GMM
         self.model_ps = []
@@ -181,6 +186,11 @@ class GaussianEMRestraintWrapper(object):
         self.rs = IMP.RestraintSet(self.m, 'GaussianEMRestraint')
         self.rs.add_restraint(self.gaussianEM_restraint)
         self.set_weight(weight)
+
+    def _set_dataset(self, target_fn):
+        """Set the dataset to point to the input file"""
+        p = IMP.pmi.mmcif.GMMParser()
+        self.dataset = p.parse_file(target_fn)['dataset']
 
     def center_target_density_on_model(self):
         '''
