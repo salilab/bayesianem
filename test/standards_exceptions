@@ -1,4 +1,8 @@
 value_object_exceptions=[]
-function_name_exceptions=[]
+function_name_exceptions=[
+    'GaussianEMRestraint.debug', 'gem_score_cc',
+    'get_rmsd_excluding_higher_than',
+    'get_rmsd_of_best_population', 'sgn'
+]
 show_exceptions=[]
 spelling_exceptions=[]
