@@ -5,27 +5,26 @@ import IMP.test
 
 import IMP.bayesianem
 import IMP.bayesianem.restraint
-import IMP.pmi.representation
 
 import os
 import operator
 import math
 
 class GaussianEMRestraintRigidBody(IMP.test.TestCase):
-    def setUp(self):
-        IMP.test.TestCase.setUp(self)
-        self.m = IMP.Model()
-        self.simo1 = IMP.pmi.representation.Representation(
-            self.m, upperharmonic=True, disorderedlength=False)
 
     def test_GaussianEMRestraint_rigid_body(self):
         """Test rigid body movement of target EM map"""
+        mdl = IMP.Model()
+        s = IMP.pmi.topology.System(mdl)
+        st1 = s.create_state()
+        hier = s.build()
+
         fname = self.get_input_file_name('2A73.pdb50.txt')
         target_ps = []
         IMP.isd.gmm_tools.decorate_gmm_from_text(
             fname,
             target_ps,
-            self.m,
+            mdl,
             radius_scale=3.0,
             mass_scale=1.0)
         gemh = IMP.bayesianem.restraint.GaussianEMRestraintWrapper(target_ps, fname,
@@ -34,7 +33,7 @@ class GaussianEMRestraintRigidBody(IMP.test.TestCase):
                                                          target_radii_scale=3.0,
                                                          target_is_rigid_body=True)
         gemh.set_label("Mobile")
-        gemh.add_target_density_to_hierarchy(self.simo1.prot)
+        gemh.add_target_density_to_hierarchy(st1)
         gemh.add_to_model()
         gemh.set_weight(100.0)
 
@@ -82,5 +81,7 @@ class GaussianEMRestraintRigidBody(IMP.test.TestCase):
 
         # Test that a two child molecules were added to State
         self.assertEqual(len(st1.get_hierarchy().get_children()), 3)
+
+
 if __name__ == '__main__':
     IMP.test.main()
