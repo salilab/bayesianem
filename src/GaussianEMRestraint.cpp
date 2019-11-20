@@ -15,6 +15,7 @@
 #include <IMP/isd/isd_config.h>
 #include <IMP/isd/Scale.h>
 #include <IMP/isd/em_utilities.h>
+#include <boost/math/special_functions/gamma.hpp>
 
 IMPBAYESIANEM_BEGIN_NAMESPACE
 
@@ -98,7 +99,7 @@ void GaussianEMRestraint::compute_initial_scores() {
   }
   cached_score_term_ += (3.0 + dsize_) / 2.0 * std::log(2);
   cached_score_term_ += 0.5 * std::log(IMP::PI);
-  cached_score_term_ -= std::lgamma(dsize_ / 2.0);
+  cached_score_term_ -= boost::math::lgamma(dsize_ / 2.0);
 
   // precalculate the self-mm score and initialize
   for (int i = 0; i < msize_; i++) {
