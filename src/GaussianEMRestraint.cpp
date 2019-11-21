@@ -97,7 +97,7 @@ void GaussianEMRestraint::compute_initial_scores() {
        iter != map_score_dd_.end(); ++iter) {
     cached_score_term_ += std::log(iter->second);
   }
-  cached_score_term_ += (3.0 + dsize_) / 2.0 * std::log(2);
+  cached_score_term_ += (3.0 + dsize_) / 2.0 * std::log(2.0);
   cached_score_term_ += 0.5 * std::log(IMP::PI);
   cached_score_term_ -= boost::math::lgamma(dsize_ / 2.0);
 
