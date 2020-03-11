@@ -19,7 +19,7 @@ from math import sqrt
 class GaussianEMRestraintWrapper(object):
     """Fit Gaussian-decorated particles to an EM map
     (also represented with a set of Gaussians)
-    \note This class wraps an isd::GaussianEMRestraint
+    \note This class wraps an IMP::bayesianem::GaussianEMRestraint
     """
     def __init__(self, densities,
                  target_fn='',
