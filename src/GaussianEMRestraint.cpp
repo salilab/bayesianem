@@ -298,7 +298,6 @@ RestraintInfo *GaussianEMRestraint::get_dynamic_info() const {
   IMP_NEW(RestraintInfo, ri, ());
   Float scale = IMP::isd::Scale(get_model(), global_sigma_).get_scale();
   ri->add_float("global sigma", scale);
-  ri->add_float("score", get_last_score());
   return ri.release();
 }
 
