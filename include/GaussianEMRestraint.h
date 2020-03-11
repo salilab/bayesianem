@@ -104,6 +104,15 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
     return exp(-unprotected_evaluate(NULL));
   }
 
+  //! Set the filename corresponding to the density GMM particles
+  /** If the density GMM particles were read from a file, this method
+      can be used to tell the restraint so that it can track this
+      information back to the original EM density file, which is useful
+      for deposition. */
+  void set_density_filename(std::string density_fn) {
+    density_fn_ = get_absolute_path(density_fn);
+  }
+
   //! Pre-calculate the density-density and model-model scores
   /** This is automatically called by the constructor.
       You only need to call it manually if you change Gaussian variances
@@ -129,9 +138,17 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
     const IMP_OVERRIDE;
   virtual IMP::ModelObjectsTemp do_get_inputs() const IMP_OVERRIDE;
   void show(std::ostream &out) const { out << "GEM restraint"; }
+
+  //! \return Information for writing to RMF files
+  RestraintInfo *get_static_info() const IMP_OVERRIDE;
+
+  //! \return Information for writing to RMF files
+  RestraintInfo *get_dynamic_info() const IMP_OVERRIDE;
+
   IMP_OBJECT_METHODS(GaussianEMRestraint);
 
  private:
+  double model_cutoff_dist_, density_cutoff_dist_;
   ParticleIndexes model_ps_;
   ParticleIndexes density_ps_;
   ParticleIndex global_sigma_;
@@ -148,6 +165,7 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   ParticleIndexes slope_ps_; //experiment
   std::map<ParticleIndex,Float> map_score_dd_;
   Float cached_score_term_; 
+  std::string density_fn_;
 
   //variables needed to tabulate the exponential
   Floats exp_grid_;

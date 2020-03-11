@@ -26,7 +26,9 @@ GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
                                          Float density_cutoff_dist, Float slope,
                                          bool update_model, bool backbone_slope,
                                          std::string name)
-    : Restraint(mdl, name), model_ps_(model_ps), density_ps_(density_ps),
+    : Restraint(mdl, name), model_cutoff_dist_(model_cutoff_dist),
+      density_cutoff_dist_(density_cutoff_dist),
+      model_ps_(model_ps), density_ps_(density_ps),
       global_sigma_(global_sigma), slope_(slope), update_model_(update_model) {
 
   msize_ = model_ps.size();
@@ -279,6 +281,25 @@ ModelObjectsTemp GaussianEMRestraint::do_get_inputs() const {
   ret.push_back(md_container_);
   ret.push_back(mm_container_);
   return ret;
+}
+
+RestraintInfo *GaussianEMRestraint::get_static_info() const {
+  IMP_NEW(RestraintInfo, ri, ());
+  ri->add_string("type", "IMP.bayesianem.GaussianEMRestraint");
+  if (!density_fn_.empty()) {
+    ri->add_filename("filename", density_fn_);
+  }
+  ri->add_float("model cutoff", model_cutoff_dist_);
+  ri->add_float("density cutoff", density_cutoff_dist_);
+  return ri.release();
+}
+
+RestraintInfo *GaussianEMRestraint::get_dynamic_info() const {
+  IMP_NEW(RestraintInfo, ri, ());
+  Float scale = IMP::isd::Scale(get_model(), global_sigma_).get_scale();
+  ri->add_float("global sigma", scale);
+  ri->add_float("score", get_last_score());
+  return ri.release();
 }
 
 IMPBAYESIANEM_END_NAMESPACE
