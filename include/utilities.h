@@ -203,7 +203,7 @@ IMP::em::DensityMap *get_masked_map(const IMP::algebra::Gaussian3Ds &gmm,
                                     double threshold) {
   DensityGrid mask = IMP::bayesianem::get_grid(densitymap);
 
-  IMP_FOREACH(const DensityGrid::Index & i, mask.get_all_indexes()) {
+  for (const DensityGrid::Index & i : mask.get_all_indexes()) {
     mask[i] = 0.0;
   }
 
@@ -274,7 +274,7 @@ double get_overlap_fast(const IMP::algebra::Gaussian3Ds &gmm,
   /*
   double m1(0.0);
   double m2(0.0);
-  IMP_FOREACH(const IMP::algebra::DensityGrid::Index & i,
+  for (const IMP::algebra::DensityGrid::Index & i :
   orig.get_all_indexes()) {
           IMP::algebra::Vector3D position(orig.get_center(i));
           IMP::algebra::DensityGrid::Index
@@ -286,8 +286,7 @@ double get_overlap_fast(const IMP::algebra::Gaussian3Ds &gmm,
   */
   double score(0.0);
   int norm(0);
-  IMP_FOREACH(const DensityGrid::Index & i,
-              orig.get_all_indexes()) {
+  for (const DensityGrid::Index & i : orig.get_all_indexes()) {
     IMP::algebra::Vector3D position(orig.get_center(i));
     DensityGrid::Index j(rasterized.get_nearest_index(position));
     // rasterized[j]*=scale;
