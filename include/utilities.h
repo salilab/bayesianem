@@ -250,9 +250,9 @@ IMP::em::DensityMap *get_sub_map(const IMP::em::DensityMap *dm,
                                  const IMP::em::DensityMap *gmm) {
   const IMP::em::DensityHeader *header = sub_gmm->get_header();
   Pointer<IMP::em::DensityMap> m_map(IMP::em::create_density_map(dm));
-  IMP::em::emreal *data1 = sub_gmm->get_data();
-  IMP::em::emreal *data2 = gmm->get_data();
-  IMP::em::emreal *new_data = m_map->get_data();
+  double *data1 = sub_gmm->get_data();
+  double *data2 = gmm->get_data();
+  double *new_data = m_map->get_data();
   for (long i = 0; i < header->get_number_of_voxels(); i++) {
     if (data2[i] != 0.0) {
       double const w(data1[i] / data2[i]);
