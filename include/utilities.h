@@ -30,7 +30,7 @@ double get_rmsd_excluding_higher_than( const IMP::core::XYZs &m1,
                                               const double t) {
   double rmsd = 0.0;
   int N(0);
-  for (int i=0; i<m1.size(); ++i) {
+  for (size_t i=0; i<m1.size(); ++i) {
     double tmprmsd = get_squared_distance(m1[i].get_coordinates(), m2[i].get_coordinates());
     if(tmprmsd<t*t){
         rmsd+=tmprmsd;
@@ -45,7 +45,7 @@ double get_percentage_closer_than(const IMP::core::XYZs &m1,
                                   const IMP::core::XYZs &m2,
                                   const double t) {
   int N(0);
-  for (int i=0; i<m1.size(); ++i) {
+  for (size_t i=0; i<m1.size(); ++i) {
     double tmprmsd = get_squared_distance(m1[i].get_coordinates(), m2[i].get_coordinates());
     if(tmprmsd<t*t){
         ++N;
@@ -59,7 +59,7 @@ double get_rmsd_of_best_population(const IMP::core::XYZs &m1,
                                    const IMP::core::XYZs &m2,
                                    const double percentage){
 	std::vector<double> sq_distances(m1.size());
-	for (int i=0; i<m1.size(); ++i) {
+	for (size_t i=0; i<m1.size(); ++i) {
 		sq_distances[i] = get_squared_distance(m1[i].get_coordinates(), m2[i].get_coordinates());
 	}
 	std::sort(sq_distances.begin(), sq_distances.end());
@@ -82,8 +82,12 @@ double get_rmsd_of_best_population(const IMP::atom::Selection &s1,
 	IMP::core::XYZs ds1;
 	IMP::core::XYZs ds2;
 
-	for (int i=0; i<ps1.size(); ++i){ds1.push_back(IMP::core::XYZ(ps1[i]));}
-	for (int i=0; i<ps2.size(); ++i){ds2.push_back(IMP::core::XYZ(ps2[i]));}
+	for (size_t i=0; i<ps1.size(); ++i) {
+          ds1.push_back(IMP::core::XYZ(ps1[i]));
+        }
+	for (size_t i=0; i<ps2.size(); ++i) {
+          ds2.push_back(IMP::core::XYZ(ps2[i]));
+        }
 
 	return get_rmsd_of_best_population(ds1,ds2,percentage);
 }
@@ -97,8 +101,12 @@ IMP::algebra::Transformation3D get_transformation_aligning_first_to_second(const
 	IMP::core::XYZs ds1;
 	IMP::core::XYZs ds2;
 
-	for (int i=0; i<ps1.size(); ++i){ds1.push_back(IMP::core::XYZ(ps1[i]));}
-	for (int i=0; i<ps2.size(); ++i){ds2.push_back(IMP::core::XYZ(ps2[i]));}
+	for (size_t i=0; i<ps1.size(); ++i) {
+          ds1.push_back(IMP::core::XYZ(ps1[i]));
+        }
+	for (size_t i=0; i<ps2.size(); ++i) {
+          ds2.push_back(IMP::core::XYZ(ps2[i]));
+        }
 
 	return IMP::algebra::get_transformation_aligning_first_to_second(ds1,ds2);
 }
@@ -109,7 +117,7 @@ double get_rmsd_of_best_population(const IMP::algebra::Vector3Ds &m1,
                                    const IMP::algebra::Vector3Ds &m2,
                                    const double percentage){
 	std::vector<double> sq_distances(m1.size());
-	for (int i=0; i<m1.size(); ++i) {
+	for (size_t i=0; i<m1.size(); ++i) {
 		sq_distances[i] = get_squared_distance(m1[i], m2[i]);
 	}
 	std::sort(sq_distances.begin(), sq_distances.end());
