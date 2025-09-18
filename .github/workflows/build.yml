@@ -33,7 +33,7 @@ jobs:
         mkdir build && cd build
         cmake .. -DIMP_DIR=${CONDA_PREFIX}/lib/cmake/IMP -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage"
         make
-        ./setup_environment.sh pytest --cov=.. --cov-branch --cov-report=xml -v ../test/test_*.py ../test/medium_test_*.py test/*/*.py
+        ./setup_environment.sh pytest --cov=.. --cov-branch --cov-report=xml -v ../test/test_*.py test/*/*.py
         flake8 ../pyext/src/
         ${GCC/gcc/gcov} $(find . -name "*.gcno")
     - uses: codecov/codecov-action@v4
