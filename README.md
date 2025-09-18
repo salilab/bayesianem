@@ -42,6 +42,4 @@ _Maintainer_: Riccardo Pellarin
 _License_: LGPL
 
 _Publications_:
-Bayesian multi-scale modeling of macromolecular structures based on cryo-electron microscopy density maps
-Samuel Hanot, Massimiliano Bonomi, Charles H Greenberg, Andrej Sali, Michael Nilges, Michele Vendruscolo, Riccardo Pellarin
-bioRxiv 113951; doi: https://doi.org/10.1101/113951 (submitted)
+ - M. Bonomi, S. Hanot, C. H. Greenberg, A. Sali, M. Nilges, M. Vendruscolo, R. Pellarin. ["Bayesian Weighing of Electron Cryo-Microscopy Data for Integrative Structural Modeling", Structure 27, 2019](https://pubmed.ncbi.nlm.nih.gov/30393052/).
