@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Bonomi"
+  given-names: "Massimiliano"
+- family-names: "Hanot"
+  given-names: "Samuel"
+- family-names: "Greenberg"
+  given-names: "Charles"
+- family-names: "Sali"
+  given-names: "Andrej"
+- family-names: "Nilges"
+  given-names: "Michael"
+- family-names: "Vendruscolo"
+  given-names: "Michele"
+- family-names: "Pellarin"
+  given-names: "Riccardo"
+title: "IMP.bayesianem"
+url: "https://github.com/salilab/bayesianem"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Bonomi"
+    given-names: "Massimiliano"
+  - family-names: "Hanot"
+    given-names: "Samuel"
+  - family-names: "Greenberg"
+    given-names: "Charles"
+  - family-names: "Sali"
+    given-names: "Andrej"
+  - family-names: "Nilges"
+    given-names: "Michael"
+  - family-names: "Vendruscolo"
+    given-names: "Michele"
+  - family-names: "Pellarin"
+    given-names: "Riccardo"
+  doi: "10.1016/j.str.2018.09.011"
+  journal: "Structure"
+  month: 1
+  start: 175
+  end: "188.e6"
+  title: "Bayesian Weighing of Electron Cryo-Microscopy Data for Integrative Structural Modeling"
+  volume: 27
+  issue: 1
+  year: 2019
