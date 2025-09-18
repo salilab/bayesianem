@@ -1,5 +1,8 @@
 # bayesianem, an IMP module for Bayesian multi-scale modeling of macromolecular structures based on cryo-electron microscopy density maps
 
+[![Build Status](https://github.com/salilab/bayesianem/actions/workflows/build.yml/badge.svg)](https://github.com/salilab/bayesianem/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/salilab/bayesianem/branch/main/graph/badge.svg)](https://codecov.io/gh/salilab/bayesianem)
+
 ## Usage:
 
 First, import the module:
