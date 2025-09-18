@@ -27,6 +27,7 @@ jobs:
       run: |
         eval "$(conda shell.bash hook)"
         conda activate python${{ matrix.python-version }}
+        rm -f ${CONDA_PREFIX}/lib/libimp_bayesianem.so* ${CONDA_PREFIX}/lib/_IMP_bayesianem.so
         # Use same C/C++ compiler as conda
         source ${CONDA_PREFIX}/etc/conda/activate.d/activate-gcc_linux-64.sh
         source ${CONDA_PREFIX}/etc/conda/activate.d/activate-gxx_linux-64.sh
