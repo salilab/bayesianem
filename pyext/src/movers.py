@@ -65,7 +65,8 @@ class MoverScheme(object):
         mc.set_kt(temp)
         steps = self.steps[self.position]
         self.position += 1
-        if self.position > self.length - 1: self.position = 0
+        if self.position > self.length - 1:
+            self.position = 0
         return mc, score_tmp_dict, steps
 
 
@@ -112,7 +113,7 @@ class HybridMonteCarloMover(IMP.core.MonteCarloMover):
 
         self.do_store_current_coordinates()
 
-        rs = get_restraint_set(self.m)
+        # rs = get_restraint_set(self.m)
         # print "Initial",rs.evaluate(False)
 
         for i in range(self.mover_scheme.get_length()):
@@ -125,8 +126,9 @@ class HybridMonteCarloMover(IMP.core.MonteCarloMover):
 
             mc.optimize(steps)
 
-            print
-            mc.get_name(), float(mc.get_number_of_accepted_steps()) / mc.get_number_of_proposed_steps()
+            print(mc.get_name(),
+                  float(mc.get_number_of_accepted_steps())
+                  / mc.get_number_of_proposed_steps())
         # print i,steps,rs.evaluate(False)
 
         # print "Final",rs.evaluate(False)
@@ -174,7 +176,8 @@ class PCAMover(IMP.core.MonteCarloMover):
                 self.ps.append(rb.get_particle())
             for bead in self.beadsd[mol]:
                 self.ps.append(bead.get_particle())
-            ps = IMP.atom.Selection(mol, resolution=self.resolution).get_selected_particles()
+            ps = IMP.atom.Selection(
+                mol, resolution=self.resolution).get_selected_particles()
             self.particle_blocks.append(ps)
 
         self.do_store_current_coordinates()
@@ -192,7 +195,8 @@ class PCAMover(IMP.core.MonteCarloMover):
         '''
 
         pdist_array = np.array(
-            IMP.pmi.get_list_of_bipartite_minimum_sphere_distance(self.particle_blocks))
+            IMP.pmi.get_list_of_bipartite_minimum_sphere_distance(
+                self.particle_blocks))
         pdist_mat = scipy.spatial.distance.squareform(pdist_array)
         pdist_mat[pdist_mat <= 10] = 1
         pdist_mat[pdist_mat > 10] = 0
@@ -201,7 +205,8 @@ class PCAMover(IMP.core.MonteCarloMover):
 
     def get_list_of_interacting_molecules(self, succ_dict, pointer):
         if pointer in succ_dict:
-            paths = [path for p in succ_dict[pointer] for path in self.get_list_of_interacting_molecules(succ_dict, p)]
+            paths = [path for p in succ_dict[pointer] for path in
+                     self.get_list_of_interacting_molecules(succ_dict, p)]
             ret = [[pointer] + path for path in paths]
             # print pointer,paths,ret
             return ret
@@ -228,24 +233,25 @@ class PCAMover(IMP.core.MonteCarloMover):
 
             for node in gr.nodes():
                 succ_dict = nx.dfs_successors(gr, node)
-                paths = [path for p in succ_dict[node] for path in self.get_list_of_interacting_molecules(succ_dict, p)]
+                paths = [path for p in succ_dict[node] for path in
+                         self.get_list_of_interacting_molecules(succ_dict, p)]
                 ret = [[node] + path for path in paths]
                 for path in ret:
-                    for s in range(2, min([depth + 1, len(path) + 1, len(self.mols)])):
+                    for s in range(2, min([depth + 1, len(path) + 1,
+                                           len(self.mols)])):
                         subls = self.get_sublists(path, s)
-                        for subl in subls: all_groups.add(frozenset(subl))
+                        for subl in subls:
+                            all_groups.add(frozenset(subl))
         return all_groups
         # succ=nx.bfs_successors(gr,0)
-
-    # succmol=dict([(self.mols[i].get_name()+str(IMP.atom.Copy(self.mols[i]).get_copy_index()),[self.mols[k].get_name()+str(IMP.atom.Copy(self.mols[i]).get_copy_index()) for k in ks]) for i,ks in succ.iteritems()])
-    # print(succmol)
 
     def do_compute_pcas(self):
         self.singletons = {}
         for i, ps in enumerate(self.particle_blocks):
             mol = self.mols[i]
-            pca = IMP.algebra.get_principal_components([IMP.core.XYZ(p).get_coordinates() for p in ps])
-            ## MB normalize
+            pca = IMP.algebra.get_principal_components(
+                [IMP.core.XYZ(p).get_coordinates() for p in ps])
+            # MB normalize
             pcan = IMP.bayesianem.NormalizePCA(pca, ps)
             self.singletons[(mol,)] = pcan
 
@@ -254,8 +260,10 @@ class PCAMover(IMP.core.MonteCarloMover):
 
             for group in all_groups:
                 mols = [self.mols[n] for n in group]
-                ps = IMP.atom.Selection(mols, resolution=self.resolution).get_selected_particles()
-                pca = IMP.algebra.get_principal_components([IMP.core.XYZ(p).get_coordinates() for p in ps])
+                ps = IMP.atom.Selection(
+                    mols, resolution=self.resolution).get_selected_particles()
+                pca = IMP.algebra.get_principal_components(
+                    [IMP.core.XYZ(p).get_coordinates() for p in ps])
                 pcan = IMP.bayesianem.NormalizePCA(pca, ps)
                 self.singletons[tuple(mols)] = pcan
 
@@ -264,8 +272,9 @@ class PCAMover(IMP.core.MonteCarloMover):
 
         pairs = []
         for s1, s2 in itertools.combinations(sk, 2):
-            rms = IMP.algebra.get_distance(self.singletons[s1].get_principal_values(),
-                                           self.singletons[s2].get_principal_values())
+            rms = IMP.algebra.get_distance(
+                self.singletons[s1].get_principal_values(),
+                self.singletons[s2].get_principal_values())
             pairs.append(((s1, s2), math.exp(-rms / temp)))
 
         return pairs
@@ -315,8 +324,6 @@ class PCAMover(IMP.core.MonteCarloMover):
         self.do_compute_pcas()
         pairs = self.do_get_pairs()
         pair = self.weighted_choice(pairs)
-        # print pair,self.reject,self.propose,float(self.propose-self.reject)/self.propose,float(sum(self.rejects))/len(self.rejects)
-        # print self.rejects
         t = self.do_compute_transforms(pair)
         # (ta2b,tb2a)=random.choice(zip(t[0],t[1]))
         # MB no need to randomly select
