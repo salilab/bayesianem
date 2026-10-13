@@ -124,22 +124,22 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
   if (slope_ > 0.0) {
     for (ParticleIndexes::const_iterator mit = slope_ps_.begin();
          mit != slope_ps_.end(); ++mit) {
-      Float min_dist = -1.0;
+      Float min_dist_sq = -1.0;
+      const Eigen::Vector3d vm(
+          core::XYZ(get_model(), *mit).get_coordinates().get_data());
       for (ParticleIndexes::const_iterator dit = density_ps_.begin();
            dit != density_ps_.end(); ++dit) {
         Eigen::Vector3d v =
-            Eigen::Vector3d(
-                core::XYZ(get_model(), *mit).get_coordinates().get_data()) -
-            Eigen::Vector3d(
+            vm - Eigen::Vector3d(
                 core::XYZ(get_model(), *dit).get_coordinates().get_data());
-        Float sd = v.norm();
+        Float d_sq = v.squaredNorm();
         // md_dists[ParticleIndexPair(*mit,*dit)]=dist;
-        if (min_dist <= 0.0) {
-          min_dist = sd;
-        } else if (sd < min_dist) {
-          min_dist = sd;
+        if (min_dist_sq <= 0.0 || d_sq < min_dist_sq) {
+          min_dist_sq = d_sq;
         }
       }
+      Float min_dist =
+             (min_dist_sq < 0.0) ? min_dist_sq : std::sqrt(min_dist_sq);
       slope_score += slope_ * min_dist;
     }
   }
@@ -196,22 +196,22 @@ void GaussianEMRestraint::debug() {
   if (slope_ > 0.0) {
     for (ParticleIndexes::const_iterator mit = slope_ps_.begin();
          mit != slope_ps_.end(); ++mit) {
-      Float min_dist = -1.0;
+      Float min_dist_sq = -1.0;
+      const Eigen::Vector3d vm(
+          core::XYZ(get_model(), *mit).get_coordinates().get_data());
       for (ParticleIndexes::const_iterator dit = density_ps_.begin();
            dit != density_ps_.end(); ++dit) {
         Eigen::Vector3d v =
-            Eigen::Vector3d(
-                core::XYZ(get_model(), *mit).get_coordinates().get_data()) -
-            Eigen::Vector3d(
+            vm - Eigen::Vector3d(
                 core::XYZ(get_model(), *dit).get_coordinates().get_data());
-        Float sd = v.norm();
+        Float d_sq = v.squaredNorm();
         // md_dists[ParticleIndexPair(*mit,*dit)]=dist;
-        if (min_dist <= 0.0) {
-          min_dist = sd;
-        } else if (sd < min_dist) {
-          min_dist = sd;
+        if (min_dist_sq <= 0.0 || d_sq < min_dist_sq) {
+          min_dist_sq = d_sq;
         }
       }
+      Float min_dist =
+             (min_dist_sq < 0.0) ? min_dist_sq : std::sqrt(min_dist_sq);
       slope_score += slope_ * min_dist;
     }
   }
