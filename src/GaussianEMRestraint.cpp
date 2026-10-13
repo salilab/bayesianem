@@ -2,7 +2,7 @@
  *  \file bayesianem/GaussianEMRestraint.cpp
  *  \brief Restraint two sets of gaussians (model and gmm derived from EM map)
  *
- *  Copyright 2007-2016 IMP Inventors. All rights reserved.
+ *  Copyright 2007-2026 IMP Inventors. All rights reserved.
  *
  */
 
@@ -53,9 +53,6 @@ GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
       new container::ListSingletonContainer(mdl, model_ps),
       new container::ListSingletonContainer(mdl, density_ps),
       density_cutoff_dist);
-
-  mm_container_ = new container::ClosePairContainer(
-      new container::ListSingletonContainer(mdl, model_ps), model_cutoff_dist);
 
   compute_initial_scores();
 
@@ -279,7 +276,6 @@ ModelObjectsTemp GaussianEMRestraint::do_get_inputs() const {
   }
   ret.push_back(get_model()->get_particle(global_sigma_));
   ret.push_back(md_container_);
-  ret.push_back(mm_container_);
   return ret;
 }
 

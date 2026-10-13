@@ -2,7 +2,7 @@
  *  \file IMP/bayesianem/GaussianEMRestraint.h
  *  \brief Restraint two sets of gaussians (model and gmm derived from EM map)
  *
- *  Copyright 2007-2016 IMP Inventors. All rights reserved.
+ *  Copyright 2007-2026 IMP Inventors. All rights reserved.
  *
  */
 
@@ -160,7 +160,6 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
   Float dd_score_;
   Float self_mm_score_;
   PointerMember<container::CloseBipartitePairContainer> md_container_;
-  PointerMember<container::ClosePairContainer> mm_container_;
   ParticleIndexes slope_ps_; //experiment
   std::map<ParticleIndex,Float> map_score_dd_;
   Float cached_score_term_; 
