@@ -117,8 +117,6 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
   mm_score = KahanSum(mm_score, self_mm_score_);
   Eigen::Vector3d deriv;
   // std::cout<<"\neval"<<std::endl;
-  boost::unordered_map<ParticleIndex, KahanVectorAccumulation> derivs_mm,
-      derivs_md, slope_md;
   // boost::unordered_map<ParticleIndexPair,Float> md_dists(msize_*dsize_);
 
   Float slope_score = 0.0;
@@ -141,7 +139,6 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
         } else if (sd < min_dist) {
           min_dist = sd;
         }
-        slope_md[*mit] = KahanVectorSum(slope_md[*mit], v * slope_ / sd);
       }
       slope_score += slope_ * min_dist;
     }
@@ -159,9 +156,6 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
     }
  
     md_score = KahanSum(md_score, score);
-    if (accum) {
-      derivs_md[_1[0]] = KahanVectorSum(derivs_md[_1[0]], -deriv);
-    }
   });
 
   double logterm = 0.0;
@@ -193,8 +187,6 @@ void GaussianEMRestraint::debug() {
   mm_score = KahanSum(mm_score, self_mm_score_);
   Eigen::Vector3d deriv;
   // std::cout<<"\neval"<<std::endl;
-  boost::unordered_map<ParticleIndex, KahanVectorAccumulation> derivs_mm,
-      derivs_md, slope_md;
   // boost::unordered_map<ParticleIndexPair,Float> md_dists(msize_*dsize_);
   
   Float slope_score = 0.0;
@@ -219,7 +211,6 @@ void GaussianEMRestraint::debug() {
         } else if (sd < min_dist) {
           min_dist = sd;
         }
-        slope_md[*mit] = KahanVectorSum(slope_md[*mit], v * slope_ / sd);
       }
       slope_score += slope_ * min_dist;
     }
