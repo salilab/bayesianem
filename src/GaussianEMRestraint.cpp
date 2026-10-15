@@ -15,9 +15,26 @@
 #include <IMP/isd/isd_config.h>
 #include <IMP/isd/Scale.h>
 #include <IMP/isd/em_utilities.h>
+#include <IMP/core/XYZR.h>
 #include <boost/math/special_functions/gamma.hpp>
 
 IMPBAYESIANEM_BEGIN_NAMESPACE
+
+namespace {
+// The close pair container lists every pair closer than its cutoff, plus
+// other pairs that depend on where the particles were when the list was
+// last updated. Score only pairs whose spheres are closer than the cutoff
+// plus this margin, so that the score depends only on the coordinates. The
+// margin (twice the container's default slack of 1A) is the set of pairs a
+// freshly updated list holds, so scores are unchanged right after an update.
+const double pair_margin = 2.0;
+
+inline bool get_is_close(Model *m, const ParticleIndexPair &pp,
+                         double cutoff) {
+  return core::get_distance(core::XYZR(m, std::get<0>(pp)),
+                            core::XYZR(m, std::get<1>(pp))) < cutoff;
+}
+} // anonymous namespace
 
 GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
                                          ParticleIndexes density_ps,
@@ -52,7 +69,7 @@ GaussianEMRestraint::GaussianEMRestraint(Model *mdl, ParticleIndexes model_ps,
   md_container_ = new container::CloseBipartitePairContainer(
       new container::ListSingletonContainer(mdl, model_ps),
       new container::ListSingletonContainer(mdl, density_ps),
-      density_cutoff_dist);
+      density_cutoff_dist + pair_margin);
 
   compute_initial_scores();
 
@@ -146,16 +163,19 @@ GaussianEMRestraint::unprotected_evaluate(DerivativeAccumulator *accum) const {
 
   std::map<ParticleIndex,Float> map_score_dm;
   // std::cout<<"calculating MD score"<<std::endl;
+  double md_cutoff = density_cutoff_dist_ + pair_margin;
   IMP_CONTAINER_FOREACH(container::CloseBipartitePairContainer, md_container_, {
-    Float score = IMP::isd::score_gaussian_overlap(get_model(), _1, &deriv);
- 
-    if (map_score_dm.find(_1[1]) != map_score_dm.end()) {
-      map_score_dm[_1[1]] += score;
-    } else {
-      map_score_dm[_1[1]] = score;
+    if (get_is_close(get_model(), _1, md_cutoff)) {
+      Float score = IMP::isd::score_gaussian_overlap(get_model(), _1, &deriv);
+
+      if (map_score_dm.find(_1[1]) != map_score_dm.end()) {
+        map_score_dm[_1[1]] += score;
+      } else {
+        map_score_dm[_1[1]] = score;
+      }
+
+      md_score = KahanSum(md_score, score);
     }
- 
-    md_score = KahanSum(md_score, score);
   });
 
   double logterm = 0.0;
@@ -218,16 +238,19 @@ void GaussianEMRestraint::debug() {
 
   std::map<ParticleIndex,Float> map_score_dm;
   // std::cout<<"calculating MD score"<<std::endl;
+  double md_cutoff = density_cutoff_dist_ + pair_margin;
   IMP_CONTAINER_FOREACH(container::CloseBipartitePairContainer, md_container_, {
-    Float score = IMP::isd::score_gaussian_overlap(get_model(), _1, &deriv);
- 
-    if (map_score_dm.find(_1[1]) != map_score_dm.end()) {
-      map_score_dm[_1[1]] += score;
-    } else {
-      map_score_dm[_1[1]] = score;
+    if (get_is_close(get_model(), _1, md_cutoff)) {
+      Float score = IMP::isd::score_gaussian_overlap(get_model(), _1, &deriv);
+
+      if (map_score_dm.find(_1[1]) != map_score_dm.end()) {
+        map_score_dm[_1[1]] += score;
+      } else {
+        map_score_dm[_1[1]] = score;
+      }
+
+      md_score = KahanSum(md_score, score);
     }
- 
-    md_score = KahanSum(md_score, score);
   });
 
   double logterm = 0.0;
