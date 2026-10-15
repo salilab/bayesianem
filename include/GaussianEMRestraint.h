@@ -85,7 +85,9 @@ class IMPBAYESIANEMEXPORT GaussianEMRestraint : public Restraint
      \param[in] density_ps particles for the density GMM
      \param[in] global_sigma Particle to modulate the uncertainty
      \param[in] model_cutoff_dist Cutoff for the model-model interactions
-     \param[in] density_cutoff_dist Cutoff for model-density interactions
+     \param[in] density_cutoff_dist Cutoff for model-density interactions.
+                Only pairs of Gaussians whose spheres (XYZR) are closer
+                than the cutoff plus 2A are scored.
      \param[in] slope Gentle term to move all particles to the density
      \param[in] update_model (DEPRECATED) update model each cycle
      \param[in] backbone_slope Limit the slope only to backbone particles
